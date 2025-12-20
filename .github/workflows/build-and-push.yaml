@@ -64,25 +64,25 @@ jobs:
       # ----------------------------------------
       - name: Tag Images (SHA)
         run: |
-          docker tag $REPO_GO:latest   ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$REPO_GO:${{ github.sha }}
-          docker tag $REPO_NODE:latest ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$REPO_NODE:${{ github.sha }}
-          docker tag $REPO_PYTHON:latest ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$REPO_PYTHON:${{ github.sha }}
+          docker tag $REPO_GO:latest ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$REPO_GO:latest
+          docker tag $REPO_NODE:latest ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$REPO_NODE:latest
+          docker tag $REPO_PYTHON:latest ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$REPO_PYTHON:latest
 
       # ----------------------------------------
       # PUSH IMAGES
       # ----------------------------------------
       - name: Push Images to ECR
         run: |
-          docker push ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$REPO_GO:${{ github.sha }}
-          docker push ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$REPO_NODE:${{ github.sha }}
-          docker push ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$REPO_PYTHON:${{ github.sha }}
+          docker push ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$REPO_GO:latest
+          docker push ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$REPO_NODE:latest
+          docker push ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$REPO_PYTHON:latest
 
       # ----------------------------------------
       # OUTPUT ARTIFACT FOR ARGOCD
       # ----------------------------------------
       - name: Save Image Metadata
         run: |
-          echo "Go_sha=${{ github.sha }}" >> image-info.txt
+          echo "go_sha=${{ github.sha }}" >> image-info.txt
           echo "node_sha=${{ github.sha }}" >> image-info.txt
           echo "python_sha=${{ github.sha }}" >> image-info.txt
 
