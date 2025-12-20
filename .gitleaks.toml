@@ -1,0 +1,14 @@
+title = "Custom Gitleaks Configuration"
+
+[allowlist]
+description = "Ignore vendor readme files and other false positives"
+paths = [
+  "README.md"
+]
+
+# You can also ignore by rule IDs:
+regexTarget = "match"
+regexes = [
+  '''BUNDLE_ENTERPRISE__CONTRIBSYS''',
+  '''aws-access-token'''
+]
