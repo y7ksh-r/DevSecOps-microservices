@@ -1,0 +1,93 @@
+name: Build & Push to ECR
+
+on:
+  repository_dispatch:
+    types: [trigger-build-pipeline]
+
+env:
+  AWS_REGION: ap-south-1
+  ACCOUNT_ID: 288937191843
+
+  REPO_GO: go-app
+  REPO_NODE: node-app
+  REPO_PYTHON: python-app
+
+jobs:
+  push-to-ecr:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+
+      # ----------------------------------------
+      # CHECKOUT
+      # ----------------------------------------
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ----------------------------------------
+      # AWS OIDC AUTH
+      # ----------------------------------------
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ env.ACCOUNT_ID }}:role/GitHubOIDC
+          aws-region: ${{ env.AWS_REGION }}
+
+      # ----------------------------------------
+      # LOGIN TO ECR
+      # ----------------------------------------
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region $AWS_REGION \
+            | docker login \
+                --username AWS \
+                --password-stdin ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+
+      # ----------------------------------------
+      # BUILD IMAGES
+      # ----------------------------------------
+      - name: Build Go image
+        run: docker build -t $REPO_GO:latest go-app/
+
+      - name: Build Node image
+        run: docker build -t $REPO_NODE:latest node-app/
+
+      - name: Build Python image
+        run: docker build -t $REPO_PYTHON:latest python-app/
+
+      # ----------------------------------------
+      # TAG IMAGES (SHA)
+      # ----------------------------------------
+      - name: Tag Images (SHA)
+        run: |
+          docker tag $REPO_GO:latest   ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$REPO_GO:${{ github.sha }}
+          docker tag $REPO_NODE:latest ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$REPO_NODE:${{ github.sha }}
+          docker tag $REPO_PYTHON:latest ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$REPO_PYTHON:${{ github.sha }}
+
+      # ----------------------------------------
+      # PUSH IMAGES
+      # ----------------------------------------
+      - name: Push Images to ECR
+        run: |
+          docker push ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$REPO_GO:${{ github.sha }}
+          docker push ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$REPO_NODE:${{ github.sha }}
+          docker push ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$REPO_PYTHON:${{ github.sha }}
+
+      # ----------------------------------------
+      # OUTPUT ARTIFACT FOR ARGOCD
+      # ----------------------------------------
+      - name: Save Image Metadata
+        run: |
+          echo "Go_sha=${{ github.sha }}" >> image-info.txt
+          echo "node_sha=${{ github.sha }}" >> image-info.txt
+          echo "python_sha=${{ github.sha }}" >> image-info.txt
+
+      - name: Upload Image Metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-info
+          path: image-info.txt
