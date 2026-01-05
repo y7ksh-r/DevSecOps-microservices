@@ -10,7 +10,7 @@ func main() {
 	port := "8080"
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello from Go app! v2 (canary test) Path: %s\n", r.URL.Path)
+		fmt.Fprintf(w, "Hello I am yaksh Path: %s\n", r.URL.Path)
 	})
 
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
