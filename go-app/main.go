@@ -10,7 +10,7 @@ func main() {
 	port := "8080"
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello I am Yaksh new Path: %s\n", r.URL.Path)
+		fmt.Fprintf(w, "Hello this is a demo of the DevSecOps Project Path: %s\n", r.URL.Path)
 	})
 
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
